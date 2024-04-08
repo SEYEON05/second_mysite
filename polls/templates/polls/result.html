@@ -1,0 +1,12 @@
+<h2>선택된 메뉴</h2>
+<div>
+    <ul>
+        {% for menu in chosen_menus %}
+            <li>{{ menu.menu_name }} - {{ menu.price }}원</li>
+            {% endfor %}
+        </ul>
+        <p>합계: {{total_price}}</p>
+    </form>
+</div>
+
+<a href="{% url 'home' %}">홈으로</a>
