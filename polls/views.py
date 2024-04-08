@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .models import *
 from django.views import generic
 from django.urls import reverse, reverse_lazy
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, get_list_or_404
 
 class CustomerCV(generic.CreateView):
     model = Customer
@@ -35,24 +35,34 @@ class MenuDV(generic.DetailView):
         context['nickname_id'] = self.kwargs['nickname_id']
         return context
 
-class ResultDV(generic.DetailView):
-    model = Customer
 
-def choose(request, cate_id):
+class ResultDV(generic.ListView):
+    model = Menu
+    template_name = 'polls/result.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        chosen_menu_ids = self.request.session.get('chosen_menus', [])  # 세션에서 가져오기
+        chosen_menus = get_list_or_404(Menu, pk__in=chosen_menu_ids)  # 선택된 메뉴 객체들 조회
+        context['chosen_menus'] = chosen_menus
+        return context
+
+
+def choose(request, cate_id, nickname_id):
     cate = get_object_or_404(Menu_Cate, pk=cate_id)
+    nickname_id = nickname_id
     try:
         chosen_menu_ids = request.POST.getlist('menu')
-        chosen_menu_list = cate.menu_set.filter(pk__in=chosen_menu_ids)
+        request.session['chosen_menus'] = chosen_menu_ids  # 세션에 저장
     except(KeyError, Menu.DoesNotExist):
         return render(
             request,
             "polls:menu_cate_detail.html",
             {
                 "object":cate,
+                "nickname_id": nickname_id,
                 "error_message": "You didn't select a choice.",
             },
         )
     else:
-        for chosen_menu in chosen_menu_list:
-            print(chosen_menu)
-        return HttpResponseRedirect(reverse("polls:result"))
+        return HttpResponseRedirect(reverse("polls:result", kwargs={'nickname_id': nickname_id, 'cate_id': cate_id}))

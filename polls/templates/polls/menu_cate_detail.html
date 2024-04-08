@@ -2,7 +2,7 @@
 <br>
 
 <div>
-  <form action="{% url 'polls:choosing' nickname_id=nickname_id pk=object.id %}" method="post">
+  <form action="{% url 'polls:choosing' nickname_id=nickname_id cate_id=object.id %}" method="post">
     {% csrf_token %}
     <span>
         {% for menu in object.menu_set.all %}
