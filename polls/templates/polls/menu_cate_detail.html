@@ -2,15 +2,19 @@
 <br>
 
 <div>
-  <form action="{% url 'polls:choosing' nickname_id=nickname_id cate_id=object.id %}" method="post">
-    {% csrf_token %}
-    <span>
-        {% for menu in object.menu_set.all %}
-        <input type="checkbox" name="menu" id="menu{{ forloop.counter }}" value="{{ menu.id }}">
-        <label for="menu{{ forloop.counter }}">{{ menu.menu_name }} {{menu.price}}원</label><br><br>
-        {% endfor %}
-        <br>
-        <input type="submit" value="주문하기">
-    </span>
+  <fieldset>
+    <form action="{% url 'polls:choosing' nickname_id=nickname_id cate_id=object.id %}" method="post">
+      {% csrf_token %}
+      <span>
+          <br>
+          {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+          {% for menu in object.menu_set.all %}
+            <input type="checkbox" name="menu" id="menu{{ forloop.counter }}" value="{{ menu.id }}">
+            <label for="menu{{ forloop.counter }}">{{ menu.menu_name }} {{menu.price}}원</label><br><br>
+          {% endfor %}
+  </fieldset>
+          <br>
+          <input type="submit" value="주문하기">
+      </span>
   </form>
 </div>

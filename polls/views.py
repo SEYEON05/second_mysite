@@ -47,9 +47,9 @@ class ResultDV(generic.ListView):
         total_price = sum(menu.price for menu in chosen_menus)
         context['chosen_menus'] = chosen_menus
         context['total_price'] = total_price
+        context['chosen_menu_ids'] = chosen_menu_ids
 
         return context
-    
 
 
 
@@ -71,3 +71,15 @@ def choose(request, cate_id, nickname_id):
         )
     else:
         return HttpResponseRedirect(reverse("polls:result", kwargs={'nickname_id': nickname_id, 'cate_id': cate_id}))
+    
+def create_order(request, nickname_id):
+    chosen_menu_ids = request.session.get('chosen_menus', [])
+
+    customer = get_object_or_404(Customer, pk=nickname_id)
+    for menu_id in chosen_menu_ids:
+        menu = get_object_or_404(Menu, pk=menu_id)
+        Order.objects.create(nickname=customer, ordered_menu=menu)
+    
+    del request.session['chosen_menus']
+    
+    return HttpResponseRedirect(reverse('polls:cate', args=(nickname_id,)))
