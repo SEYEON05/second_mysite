@@ -44,8 +44,13 @@ class ResultDV(generic.ListView):
         context = super().get_context_data(**kwargs)
         chosen_menu_ids = self.request.session.get('chosen_menus', [])  # 세션에서 가져오기
         chosen_menus = get_list_or_404(Menu, pk__in=chosen_menu_ids)  # 선택된 메뉴 객체들 조회
+        total_price = sum(menu.price for menu in chosen_menus)
         context['chosen_menus'] = chosen_menus
+        context['total_price'] = total_price
+
         return context
+    
+
 
 
 def choose(request, cate_id, nickname_id):
