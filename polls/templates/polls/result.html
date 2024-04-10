@@ -1,12 +1,15 @@
 <h2>선택된 메뉴</h2>
 <div>
+    <form action="{% url 'polls:creatingorder' nickname_id=nickname_id %}">
     <ul>
         {% for menu in chosen_menus %}
             <li>{{ menu.menu_name }} - {{ menu.price }}원</li>
             {% endfor %}
         </ul>
         <p>합계: {{total_price}}</p>
+    
+    <input type="submit" value="홈으로">
+
     </form>
 </div>
 
-<a href="{% url 'home' %}">홈으로</a>

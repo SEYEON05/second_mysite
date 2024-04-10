@@ -42,9 +42,10 @@ class ResultDV(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        chosen_menu_ids = self.request.session.get('chosen_menus', [])  # 세션에서 가져오기
+        chosen_menu_ids = self.request.session.get('chosen_menu_ids', [])  # 세션에서 가져오기
         chosen_menus = get_list_or_404(Menu, pk__in=chosen_menu_ids)  # 선택된 메뉴 객체들 조회
         total_price = sum(menu.price for menu in chosen_menus)
+        context['nickname_id'] = self.kwargs['nickname_id']
         context['chosen_menus'] = chosen_menus
         context['total_price'] = total_price
         context['chosen_menu_ids'] = chosen_menu_ids
@@ -57,12 +58,17 @@ def choose(request, cate_id, nickname_id):
     cate = get_object_or_404(Menu_Cate, pk=cate_id)
     nickname_id = nickname_id
     try:
-        chosen_menu_ids = request.POST.getlist('menu')
-        request.session['chosen_menus'] = chosen_menu_ids  # 세션에 저장
-    except(KeyError, Menu.DoesNotExist):
+        chosen_menu_ids = request.POST.getlist('menu') # 템플릿의 post로 받은 선택된 메뉴들의 id 리스트 만들기
+        # 선택된 메뉴가 없는 경우 예외 처리
+        if not chosen_menu_ids:
+            raise ValueError
+        
+        request.session['chosen_menu_ids'] = chosen_menu_ids  # 세션에 저장
+    
+    except(KeyError, Menu.DoesNotExist, ValueError): # try 코드가 실행되지 않았을 때 context 형태
         return render(
             request,
-            "polls:menu_cate_detail.html",
+            "polls/menu_cate_detail.html", 
             {
                 "object":cate,
                 "nickname_id": nickname_id,
@@ -73,13 +79,13 @@ def choose(request, cate_id, nickname_id):
         return HttpResponseRedirect(reverse("polls:result", kwargs={'nickname_id': nickname_id, 'cate_id': cate_id}))
     
 def create_order(request, nickname_id):
-    chosen_menu_ids = request.session.get('chosen_menus', [])
+    chosen_menu_ids = request.session.get('chosen_menu_ids', [])
 
-    customer = get_object_or_404(Customer, pk=nickname_id)
+    # customer = get_object_or_404(Customer, pk=nickname_id)
     for menu_id in chosen_menu_ids:
         menu = get_object_or_404(Menu, pk=menu_id)
-        Order.objects.create(nickname=customer, ordered_menu=menu)
+        o = Order.objects.create(nickname_id=nickname_id, ordered_menu=menu)
+        o.save()
+    del request.session['chosen_menu_ids']
     
-    del request.session['chosen_menus']
-    
-    return HttpResponseRedirect(reverse('polls:cate', args=(nickname_id,)))
+    return HttpResponseRedirect(reverse('home'))

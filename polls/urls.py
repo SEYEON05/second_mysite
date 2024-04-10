@@ -9,5 +9,5 @@ urlpatterns = [
     path("<int:nickname_id>/cate/<int:pk>/", MenuDV.as_view(), name="menu"),
     path("<int:nickname_id>/cate/<int:cate_id>/choosing/", choose, name="choosing"),
     path("<int:nickname_id>/cate/<int:cate_id>/result/", ResultDV.as_view(), name="result"),
-    # path("<int:nickname_id>/create_order/", create_order, name="creatingorder"),
+    path("<int:nickname_id>/create_order/", create_order, name="creatingorder"),
 ]
